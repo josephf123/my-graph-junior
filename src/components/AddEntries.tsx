@@ -1,6 +1,7 @@
 import React from "react"
 import {IState as Props} from "../App"
-
+import {Box, Card, CardActions, CardContent, Button, Typography, TextField, Switch, FormControlLabel} from '@mui/material'
+import "./componentsCSS/AddEntries.css"
 interface IProps {
     entries: Props["entries"],
     setEntries: React.Dispatch<React.SetStateAction<Props["entries"]>>
@@ -40,42 +41,43 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
         setInput({
             title: "",
             description: "",
-            private: false
+            // this means if someone presses the button, it will stay on until turned off
+            private: input.private
         })
     }
 
 
     return (
-        <div>
-            <input 
-            type="text"
-            name="title"
-            placeholder="Enter title"
-            onChange={ handleChange}
-            value={input.title}
-            >
-            </input>
-            <input 
-            type="text"
-            name="description"
-            placeholder="Enter description"
-            value={input.description}
-            onChange={ handleChange }
-            >
-            </input>
-            <input
-            type="checkbox"
-            name="private"
-            checked={input.private}
-            onChange={ handleChange }
-            ></input>
-            <label htmlFor="private">Private</label>
-            <button
-            onClick={ handleClick }
-            >
-                Submit
-            </button>
-        </div>
+        <Card sx={{display: "block", m: 3, width: 500}}>
+            <CardContent className="inputHolder">
+                <Box className="entryInput">
+                    <TextField 
+                    onChange={handleChange}
+                    value={input.title}
+                    label="Title" variant="standard"
+                    sx={{m: 3, mb:0}}
+                    name="title"
+                    />
+                </Box>
+                <Box className="entryInput">
+                    <TextField 
+                    onChange={handleChange}
+                    value={input.description}
+                    label="Description" 
+                    variant="standard" 
+                    sx={{m: 3, mb: 0}}
+                    name="description"
+                    />
+                </Box>
+                <FormControlLabel control={<Switch
+                onChange={ handleChange }
+                checked={input.private}
+                name="private"
+                sx={{margin: "auto"}}
+                />} label="Private mode" />
+                <Button variant="contained" onClick={ handleClick }>Contained</Button>
+            </CardContent>
+        </Card>
     )
 }
 

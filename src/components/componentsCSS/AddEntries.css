@@ -1,0 +1,9 @@
+.entryInput {
+    /* display: "block"; */
+    margin: "5px" !important
+}
+
+.inputHolder {
+    display: inline-flex;
+    flex-direction: column;
+}

@@ -31,12 +31,14 @@ function App() {
   return (
     <div className="App">
       <PrivateButton privateMode={privateMode} setPrivateMode={setPrivateMode}/>
-      <AddEntries entries={entries} setEntries={setEntries}/>
       <div className="entryHolder">
+        <AddEntries entries={entries} setEntries={setEntries}/>
+      </div>
+      <div>
+
         <AllEntries entries={entries} privateMode={privateMode}/>
       </div>
 
-      <Button variant="contained">Hello World</Button>
 
     </div>
   );

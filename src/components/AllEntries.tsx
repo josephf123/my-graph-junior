@@ -10,7 +10,7 @@ const AllEntries: React.FC<Props> = ({entries, privateMode}) => {
             <>
             { !entry.private || privateMode
             ?
-                <Card sx={{display: "block", m: 3, width: 500}}>
+                <Card sx={{display: "inline-block", m: 3, width: 500}}>
                     <CardContent>
                         <Typography variant="h5" component="div" gutterBottom>
                             {entry.title}
