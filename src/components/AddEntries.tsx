@@ -1,7 +1,11 @@
-import React from "react"
+import React, {useState} from "react"
 import {IState as Props} from "../App"
 import {Box, Card, CardActions, CardContent, Button, Typography, TextField, Switch, FormControlLabel} from '@mui/material'
 import "./componentsCSS/AddEntries.css"
+
+import db from "../firebase"
+import { collection, addDoc } from 'firebase/firestore';
+
 interface IProps {
     entries: Props["entries"],
     setEntries: React.Dispatch<React.SetStateAction<Props["entries"]>>
@@ -10,6 +14,7 @@ interface IProps {
 
 const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
     
+
     const [input, setInput] = React.useState({
         title: "",
         description: "",
@@ -26,7 +31,7 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
         })
     }
 
-    const handleClick = () => {
+    const handleClick = async () => {
         // Add input field as most recent entry
         setEntries([
             ...entries,
@@ -37,6 +42,20 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             }
             
         ])
+        try {
+            const docRef = await addDoc(collection(db, "entries"), {
+                userId: 1,
+                entryId: 2,
+                entryTitle: input.title,
+                entryDescription: input.description,
+                isPrivate: input.private
+            });
+            console.log("Document written with ID: ", docRef.id);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+
+
         // Resets input after entry has been added
         setInput({
             title: "",
@@ -48,34 +67,38 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
 
 
     return (
-        <Card sx={{display: "block", m: 3, width: 500}}>
+        <Card sx={{m: 3, width: 500}}>
             <CardContent className="inputHolder">
-                <Box className="entryInput">
+                <Box sx={{display: "flex"}}>
                     <TextField 
                     onChange={handleChange}
                     value={input.title}
                     label="Title" variant="standard"
-                    sx={{m: 3, mb:0}}
+                    sx={{mr: "auto", mb: 1}}
                     name="title"
                     />
                 </Box>
-                <Box className="entryInput">
+                <Box sx={{display: "flex", mr: 2, pr: 2}}>
                     <TextField 
                     onChange={handleChange}
                     value={input.description}
                     label="Description" 
                     variant="standard" 
-                    sx={{m: 3, mb: 0}}
+                    rows={5}
+                    sx={{ display: "flex", width: "100%", mb: 2}}
+                    multiline
+
                     name="description"
+                    
                     />
                 </Box>
                 <FormControlLabel control={<Switch
                 onChange={ handleChange }
                 checked={input.private}
                 name="private"
-                sx={{margin: "auto"}}
-                />} label="Private mode" />
-                <Button variant="contained" onClick={ handleClick }>Contained</Button>
+                sx={{textAlign: "center"}}
+                />} label="Private mode" sx={{margin: "auto"}}/>
+                <Button variant="contained" onClick={ handleClick } sx={{mr: 4}}>Submit</Button>
             </CardContent>
         </Card>
     )
