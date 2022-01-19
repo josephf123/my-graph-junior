@@ -4,7 +4,10 @@ import {Box, Card, CardActions, CardContent, Button, Typography, TextField, Swit
 import "./componentsCSS/AddEntries.css"
 
 import db from "../firebase"
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
+
+import {v4 as uuid} from "uuid"
+
 
 interface IProps {
     entries: Props["entries"],
@@ -33,29 +36,17 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
 
     const handleClick = async () => {
         // Add input field as most recent entry
+        const randomId = uuid().slice(0,8)
         setEntries([
             ...entries,
             {
+                entryId: randomId,
                 title: input.title,
                 description: input.description,
                 private: input.private
             }
             
         ])
-        try {
-            const docRef = await addDoc(collection(db, "entries"), {
-                userId: 1,
-                entryId: 2,
-                entryTitle: input.title,
-                entryDescription: input.description,
-                isPrivate: input.private
-            });
-            console.log("Document written with ID: ", docRef.id);
-        } catch (e) {
-            console.error("Error adding document: ", e);
-        }
-
-
         // Resets input after entry has been added
         setInput({
             title: "",
@@ -63,6 +54,20 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             // this means if someone presses the button, it will stay on until turned off
             private: input.private
         })
+        try {
+            const docRef = await setDoc(doc(db, "entries", randomId), {
+                userId: 1,
+                entryId: randomId,
+                entryTitle: input.title,
+                entryDescription: input.description,
+                isPrivate: input.private
+            });
+            console.log("Document written with ID: ", randomId);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+
+
     }
 
 

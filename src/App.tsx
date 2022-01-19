@@ -8,11 +8,14 @@ import PrivateButton from './components/PrivateMode';
 import ReactDOM from 'react-dom';
 import Button from '@mui/material/Button';
 
+import {v4 as uuid} from "uuid"
+
 // import {firebase, db} from "./firebase"
 import db from "./firebase"
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 export interface entry {
+  entryId: string,
   title: string,
   description: string,
   private: boolean
@@ -36,6 +39,7 @@ function App() {
     querySnapshot.forEach((doc) => {
       let data = doc.data()
       let entry: entry = {
+        entryId: (data.entryId as string),
         title: (data.entryTitle as string),
         description: (data.entryDescription as string),
         private: (data.isPrivate as boolean)
@@ -43,6 +47,9 @@ function App() {
       entryList.push(entry)
     });
     setEntries(entryList)
+
+
+
   }
 
   useEffect(() => {
@@ -60,7 +67,7 @@ function App() {
       </div>
       <div>
 
-        <AllEntries entries={entries} privateMode={privateMode}/>
+        <AllEntries entries={entries} setEntries={setEntries} privateMode={privateMode}/>
       </div>
 
 
