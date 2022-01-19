@@ -48,7 +48,7 @@ const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHov
         console.log(new Date().getMilliseconds())
 
         const docRef = doc(db, "entries", entryInd.entryId)        
-        await setDoc(docRef, {private: !entryInd.private})
+        await setDoc(docRef, {private: !entryInd.private}, {merge : true})
         console.log(new Date().getMilliseconds())
 
     }
