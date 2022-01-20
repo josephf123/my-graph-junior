@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {IState as Props, entry} from "../App"
+import {IState as Props, entry} from "./App"
 import {Box, Card, CardActions, CardContent, Button, Typography, IconButton} from '@mui/material'
 
 import { Delete, LockOpen, LockOutlined } from '@mui/icons-material';
@@ -8,6 +8,8 @@ import HoverIconBar from "./HoverIconBar";
 
 import db from "../firebase"
 import { doc, collection, addDoc, getDocs, deleteDoc, query, where, getDoc } from 'firebase/firestore';
+
+import {v4 as uuid} from "uuid"
 
 interface IProps {
     entries: entry[],
@@ -50,7 +52,7 @@ const AllEntries: React.FC<IProps> = ({entries, setEntries, privateMode}) => {
         }
 
         return (
-            < AllThings />
+            < AllThings key={uuid()} />
         )
 
     })

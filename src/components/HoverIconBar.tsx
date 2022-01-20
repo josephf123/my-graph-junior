@@ -1,5 +1,5 @@
 
-import { entry } from "../App"
+import { entry } from "./App"
 
 import { IconButton } from "@mui/material"
 import { LockOutlined, LockOpen, Delete } from "@mui/icons-material"

@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import logo from './logo.svg';
-import './App.css';
-import AllEntries from './components/AllEntries';
-import AddEntries from './components/AddEntries';
-import PrivateButton from './components/PrivateMode';
+import './componentsCSS/App.css';
+import AllEntries from './AllEntries';
+import AddEntries from './AddEntries';
+import PrivateButton from './PrivateMode';
 
 import ReactDOM from 'react-dom';
 import Button from '@mui/material/Button';
@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import {v4 as uuid} from "uuid"
 
 // import {firebase, db} from "./firebase"
-import db from "./firebase"
+import db from "../firebase"
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 export interface entry {
