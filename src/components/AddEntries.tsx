@@ -3,7 +3,7 @@ import {IState as Props} from "./App"
 import {Box, Card, CardActions, CardContent, Button, Typography, TextField, Switch, FormControlLabel} from '@mui/material'
 import "./componentsCSS/AddEntries.css"
 
-import db from "../firebase"
+import { db } from "../firebase"
 import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
 
 import {v4 as uuid} from "uuid"

@@ -5,7 +5,7 @@ import { IconButton } from "@mui/material"
 import { LockOutlined, LockOpen, Delete } from "@mui/icons-material"
 
 import { doc, deleteDoc, getDoc, setDoc } from "firebase/firestore"
-import db from "../firebase"
+import { db } from "../firebase"
 
 interface IProps {
     entryInd: entry,
