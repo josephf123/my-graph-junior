@@ -7,6 +7,7 @@ import { db } from "../firebase"
 import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
 
 import {v4 as uuid} from "uuid"
+import { useAuth } from "../contexts/AuthContext"
 
 
 interface IProps {
@@ -17,6 +18,7 @@ interface IProps {
 
 const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
     
+    const {currentUser} = useAuth()
 
     const [input, setInput] = React.useState({
         title: "",
@@ -54,15 +56,27 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             // this means if someone presses the button, it will stay on until turned off
             private: input.private
         })
+
+
+        // setDoc().then(() => {
+
+        // }).catch((e) => {
+
+        // })
+
         try {
-            const docRef = await setDoc(doc(db, "entries", randomId), {
-                userId: 1,
-                entryId: randomId,
-                entryTitle: input.title,
-                entryDescription: input.description,
-                isPrivate: input.private
-            });
-            console.log("Document written with ID: ", randomId);
+            if (currentUser){
+                const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", randomId), {
+                    userId: 1,
+                    entryId: randomId,
+                    entryTitle: input.title,
+                    entryDescription: input.description,
+                    isPrivate: input.private
+                });
+
+                console.log("Document written with ID: ", randomId);
+            }
+
         } catch (e) {
             console.error("Error adding document: ", e);
         }

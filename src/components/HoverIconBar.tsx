@@ -6,6 +6,7 @@ import { LockOutlined, LockOpen, Delete } from "@mui/icons-material"
 
 import { doc, deleteDoc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "../firebase"
+import { useAuth } from "../contexts/AuthContext"
 
 interface IProps {
     entryInd: entry,
@@ -15,6 +16,9 @@ interface IProps {
 }
 
 const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHovering}) => {
+
+    const {currentUser} = useAuth()
+
     const handleDelete = async (event : React.MouseEvent<HTMLButtonElement, MouseEvent>, entryInd: entry) => {
 
 
@@ -24,16 +28,18 @@ const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHov
         // there aren't checks before we change entries.
         setEntries(entries.filter((el) => el.entryId !== entryInd.entryId))
     
-    
-    
-        const docRef = doc(db, "entries", entryInd.entryId)
-        const docSnap = await getDoc(docRef)
-        if (docSnap.exists()) {
-            await deleteDoc(docRef);
-        } else {
-            console.log("No such document!");
-            alert("woah slow down there bud, thats not a valid entry")
+        if (currentUser) {
+            const docRef = doc(db, "users", currentUser.uid, "entries", entryInd.entryId)
+            const docSnap = await getDoc(docRef)
+            if (docSnap.exists()) {
+                await deleteDoc(docRef);
+            } else {
+                console.log("No such document!");
+                alert("woah slow down there bud, thats not a valid entry")
+            }
+
         }
+    
     
     }
     const handleChangePrivacy = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, entryInd: entry) => {
@@ -46,10 +52,11 @@ const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHov
             return prevState
         })
         console.log(new Date().getMilliseconds())
-
-        const docRef = doc(db, "entries", entryInd.entryId)        
-        await setDoc(docRef, {private: !entryInd.private}, {merge : true})
-        console.log(new Date().getMilliseconds())
+        if (currentUser) {
+            const docRef = doc(db, "users", currentUser.uid, "entries", entryInd.entryId)        
+            await setDoc(docRef, {private: !entryInd.private}, {merge : true})
+            console.log(new Date().getMilliseconds())
+        }
 
     }
 
