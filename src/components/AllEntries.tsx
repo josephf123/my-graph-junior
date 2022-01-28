@@ -10,24 +10,38 @@ import { db } from "../firebase"
 import { doc, collection, addDoc, getDocs, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 
 import {v4 as uuid} from "uuid"
+import { ModalDetails } from "./EntryModal";
 
 interface IProps {
     entries: entry[],
     setEntries: React.Dispatch<React.SetStateAction<entry[]>>,
-    privateMode: boolean
+    privateMode: boolean,
+    modalDetails: ModalDetails
+    setModalDetails: React.Dispatch<React.SetStateAction<ModalDetails>>
 }
 
-const AllEntries: React.FC<IProps> = ({entries, setEntries, privateMode}) => {
+const AllEntries: React.FC<IProps> = ({entries, setEntries, privateMode, modalDetails, setModalDetails}) => {
+    console.log("this should run again")
     const renderEntries = () => entries.map((entry) => {
-        console.log(entry)
         const AllThings = () => {
             const [isHovering, setIsHovering] = useState(false);
-
             return (
                 <>
                     { !entry.private || privateMode
                     ?
-                        <Card key={entry.entryId} sx={{display: "inline-block", m: 3, width: 500}} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+                        <Card 
+                        key={entry.entryId}
+                        sx={{display: "inline-block", m: 3, width: 500, cursor: "pointer"}} 
+                        onMouseEnter={() => setIsHovering(true)} 
+                        onMouseLeave={() => setIsHovering(false)} 
+                        onClick={() => {
+                            setIsHovering(false)
+                            const modalDetails = {
+                                open: true,
+                                entry: entry
+                            }
+                            setModalDetails(modalDetails)
+                        }}>
                             <CardContent>
                                 <Typography variant="h5" component="div" gutterBottom>
                                     {entry.title}
@@ -38,7 +52,7 @@ const AllEntries: React.FC<IProps> = ({entries, setEntries, privateMode}) => {
 
                                 <div style={{height: 28}}>
                                     { isHovering
-                                    ? <HoverIconBar entryInd={entry} entries={entries} setEntries={setEntries} setIsHovering={setIsHovering}/>
+                                    ? <HoverIconBar entryInd={entry} entries={entries} setEntries={setEntries} setIsHovering={setIsHovering} setModalDetails={setModalDetails}/>
                                     : <></>
                                     }
                                 </div>

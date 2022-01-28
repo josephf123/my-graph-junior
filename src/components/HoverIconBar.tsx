@@ -2,20 +2,21 @@
 import { entry } from "./App"
 
 import { IconButton } from "@mui/material"
-import { LockOutlined, LockOpen, Delete } from "@mui/icons-material"
-
+import { LockOutlined, LockOpen, Delete, Edit } from "@mui/icons-material"
 import { doc, deleteDoc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "../firebase"
 import { useAuth } from "../contexts/AuthContext"
+import { ModalDetails } from "./EntryModal"
 
 interface IProps {
     entryInd: entry,
     entries: entry[],
     setEntries: React.Dispatch<React.SetStateAction<entry[]>>,
-    setIsHovering: React.Dispatch<React.SetStateAction<boolean>>
+    setIsHovering: React.Dispatch<React.SetStateAction<boolean>>,
+    setModalDetails:React.Dispatch<React.SetStateAction<ModalDetails>>
 }
 
-const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHovering}) => {
+const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHovering, setModalDetails}) => {
 
     const {currentUser} = useAuth()
 
@@ -59,10 +60,23 @@ const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHov
         }
 
     }
+    const handleEdit = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, entryInd: entry) => {
+        setIsHovering(false)
+        const modalDetails = {
+            open: true,
+            entry: entryInd
+        }
+        setModalDetails(modalDetails)
+        console.log("does this work????")
 
+    }
     return (
         <>
-            <IconButton onClick={(e) => handleChangePrivacy(e, entryInd)}>
+            <IconButton onClick={(e) => {e.stopPropagation(); handleEdit(e, entryInd)}}>
+                <Edit />
+            </IconButton>
+
+            <IconButton onClick={(e) => {e.stopPropagation(); handleChangePrivacy(e, entryInd)}}>
                 { entryInd.private
                 ?
                 <LockOutlined />
@@ -70,7 +84,7 @@ const HoverIconBar: React.FC<IProps> = ({entryInd, entries, setEntries, setIsHov
                 <LockOpen />
             }
             </IconButton>
-            <IconButton onClick={(e) => handleDelete(e, entryInd)}>
+            <IconButton onClick={(e) => {e.stopPropagation(); handleDelete(e, entryInd)}}>
                 <Delete />
             </IconButton>
         </>

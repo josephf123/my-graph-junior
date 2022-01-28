@@ -1,0 +1,49 @@
+.entryModalOpen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vh;
+    height: 60vh;
+    text-align: left;
+}
+
+.entryModalClosed {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.modalTitle:focus {
+    outline: none;
+    border-bottom: 2px solid black;
+    padding-bottom: 0px;
+}
+
+.modalTitle {
+    font-size: 2.5em;
+    border: none;
+    padding-bottom: 2px;
+    display: flex;
+}
+
+.modalDescription {
+    display: flex;
+    font-size: 18px;
+    border: none;
+    /* width: max-content; */
+    height: 65%;
+    margin-right: 0;
+    padding-right: 0;
+}
+
+.textfieldDescription {
+    outline: none;
+    border: none;
+}
+
+.cardContentModal {
+    display: flex;
+    flex-direction: column;
+    /* width: 100%; */
+}

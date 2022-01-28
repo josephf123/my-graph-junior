@@ -57,17 +57,9 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             private: input.private
         })
 
-
-        // setDoc().then(() => {
-
-        // }).catch((e) => {
-
-        // })
-
         try {
             if (currentUser){
                 const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", randomId), {
-                    userId: 1,
                     entryId: randomId,
                     entryTitle: input.title,
                     entryDescription: input.description,

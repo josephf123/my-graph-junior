@@ -11,7 +11,7 @@ import { Alert, Button, Card, CardContent } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut, updateCurrentUser } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
-
+import { EntryModal, ModalDetails } from "./EntryModal";
 
 export interface entry {
   entryId: string,
@@ -30,6 +30,8 @@ const App = () => {
 
   const [privateMode, setPrivateMode] = useState<IState["privateMode"]>(false)
   const [error, setError] = useState<string>("")
+  const [modalDetails, setModalDetails] = useState({open: false, entry: {} as entry})
+
 
   const handleLogout = () => {
       setError("")
@@ -46,20 +48,25 @@ const App = () => {
   const [entries, setEntries] = useState<IState["entries"]>([])
 
   const getFirestoreData = async () => {
-      let entryList: IState["entries"] = []
-      const querySnapshot = await getDocs(collection(db, "entries"))
 
-      querySnapshot.forEach((doc) => {
-          let data = doc.data()
-          let entry: entry = {
-              entryId: (data.entryId as string),
-              title: (data.entryTitle as string),
-              description: (data.entryDescription as string),
-              private: (data.isPrivate as boolean)
-          }
-      entryList.push(entry)
-      });
-      setEntries(entryList)
+      let entryList: IState["entries"] = []
+      if (currentUser) {
+        const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "entries"))
+        querySnapshot.forEach((doc) => {
+            let data = doc.data()
+            let entry: entry = {
+                entryId: (data.entryId as string),
+                title: (data.entryTitle as string),
+                description: (data.entryDescription as string),
+                private: (data.isPrivate as boolean)
+            }
+        entryList.push(entry)
+        });
+        setEntries(entryList)
+        console.log(entryList)
+      }
+
+
   }
 
   useEffect(() => {
@@ -76,8 +83,11 @@ const App = () => {
       <div className="entryHolder">
           <AddEntries entries={entries} setEntries={setEntries}/>
       </div>
+      <div className="entryModal">
+        <EntryModal modalDetails={modalDetails} setModalDetails={setModalDetails} entries={entries} setEntries={setEntries}/>
+      </div>
       <div>
-          <AllEntries entries={entries} setEntries={setEntries} privateMode={privateMode}/>
+          <AllEntries entries={entries} setEntries={setEntries} privateMode={privateMode} modalDetails={modalDetails} setModalDetails={setModalDetails}/>
       </div>
       <Card>
           <CardContent>
