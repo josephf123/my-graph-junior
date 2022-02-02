@@ -1,23 +1,27 @@
 import "../firebase"
 import React, {useState, useEffect} from 'react';
 import './componentsCSS/App.css';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, orderBy, query } from 'firebase/firestore';
 import { firebaseApp, db } from "../firebase"
 
 import AllEntries from './AllEntries';
-import AddEntries from './AddEntries';
+import { AddEntries } from './AddEntries';
 import PrivateButton from './PrivateMode';
 import { Alert, Button, Card, CardContent } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut, updateCurrentUser } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { EntryModal, ModalDetails } from "./EntryModal";
+import { tag } from "./Tagbar";
 
 export interface entry {
   entryId: string,
   title: string,
   description: string,
-  private: boolean
+  tags: tag[],
+  private: boolean,
+  dateCreated: Date,
+  dateModified: Date
 }
 
 export interface IState {
@@ -51,19 +55,22 @@ const App = () => {
 
       let entryList: IState["entries"] = []
       if (currentUser) {
-        const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "entries"))
+        const querySnapshot = await getDocs(query(collection(db, "users", currentUser.uid, "entries"), orderBy("dateModified")))
         querySnapshot.forEach((doc) => {
             let data = doc.data()
             let entry: entry = {
                 entryId: (data.entryId as string),
                 title: (data.entryTitle as string),
                 description: (data.entryDescription as string),
-                private: (data.isPrivate as boolean)
+                tags: (data.tags as tag[]), 
+                private: (data.isPrivate as boolean),
+                dateCreated: (data.dateCreated as Date),
+                dateModified: (data.dateModified as Date)
             }
-        entryList.push(entry)
+            console.log(entry)
+            entryList.push(entry)
         });
-        setEntries(entryList)
-        console.log(entryList)
+        setEntries(entryList.reverse())
       }
 
 

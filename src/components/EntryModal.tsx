@@ -6,6 +6,7 @@ import { db } from "../firebase"
 import { entry } from "./App"
 
 import "./componentsCSS/EntryModal.css"
+import { tag, Tagbar } from "./Tagbar"
 
 export type ModalDetails = {
     open: boolean,
@@ -26,16 +27,19 @@ export const EntryModal: React.FC<IProps> = ({modalDetails, setModalDetails, ent
     const [input, setInput] = React.useState({
         title: "",
         description: "",
-        private: false
+        private: false,
+        tags: ([] as tag[])
     })
 
     // This allows for input to be set once the props are passed in
     // from modalDetails
     useEffect(() => {
+        console.log(modalDetails)
         setInput({
             title: modalDetails.entry.title,
             description: modalDetails.entry.description,
-            private: modalDetails.entry.private
+            private: modalDetails.entry.private,
+            tags: modalDetails.entry.tags // can't communicate with modalDetails from tagbar
         })
 
     }, [modalDetails])
@@ -58,7 +62,10 @@ export const EntryModal: React.FC<IProps> = ({modalDetails, setModalDetails, ent
                 entryId: modalDetails.entry.entryId,
                 title: input.title,
                 description: input.description,
-                private: input.private
+                tags: modalDetails.entry.tags,
+                private: input.private,
+                dateCreated: modalDetails.entry.dateCreated,
+                dateModified: new Date()
             }
             prevState[idx] = newEntry
             return prevState
@@ -115,6 +122,7 @@ export const EntryModal: React.FC<IProps> = ({modalDetails, setModalDetails, ent
                         className="textfieldDescription"
                         />
                     </Box>
+                    <Tagbar entry={modalDetails.entry} entries={entries} setEntries={setEntries} setModalDetails={setModalDetails}/>
                     <FormControlLabel control={<Switch
                     onChange={ handleChange }
                     checked={input.private}

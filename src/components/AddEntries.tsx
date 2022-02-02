@@ -8,6 +8,8 @@ import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
 
 import {v4 as uuid} from "uuid"
 import { useAuth } from "../contexts/AuthContext"
+import { Tagbar } from "./Tagbar"
+import { tag } from "./Tagbar"
 
 
 interface IProps {
@@ -15,15 +17,23 @@ interface IProps {
     setEntries: React.Dispatch<React.SetStateAction<Props["entries"]>>
 }
 
+export type inputType = {
+    title: string,
+    description: string,
+    private: boolean,
+    tags: tag[]
+}
 
-const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
-    
+
+export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
+    console.log("does this re-render????")
     const {currentUser} = useAuth()
 
     const [input, setInput] = React.useState({
         title: "",
         description: "",
-        private: false
+        private: false,
+        tags: ([] as tag[])
     })
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,32 +48,38 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
 
     const handleClick = async () => {
         // Add input field as most recent entry
+        let currentDate = new Date()
         const randomId = uuid().slice(0,8)
-        setEntries([
-            ...entries,
-            {
-                entryId: randomId,
-                title: input.title,
-                description: input.description,
-                private: input.private
-            }
-            
+        setEntries([{
+            entryId: randomId,
+            title: input.title,
+            description: input.description,
+            private: input.private,
+            tags: input.tags,
+            dateCreated: currentDate,
+            dateModified: currentDate
+        },...entries
         ])
         // Resets input after entry has been added
         setInput({
             title: "",
             description: "",
             // this means if someone presses the button, it will stay on until turned off
-            private: input.private
+            private: input.private,
+            tags: ([] as tag[])
         })
 
         try {
             if (currentUser){
+                console.log(input.tags, "HELLO!")
                 const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", randomId), {
                     entryId: randomId,
                     entryTitle: input.title,
                     entryDescription: input.description,
-                    isPrivate: input.private
+                    isPrivate: input.private, 
+                    tags: input.tags,
+                    dateCreated: currentDate,
+                    dateModified: currentDate
                 });
 
                 console.log("Document written with ID: ", randomId);
@@ -96,23 +112,23 @@ const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
                     label="Description" 
                     variant="standard" 
                     rows={5}
-                    sx={{ display: "flex", width: "100%", mb: 2}}
+                    sx={{ display: "flex", width: "100%", mb: 3}}
                     multiline
 
                     name="description"
                     
                     />
                 </Box>
+                <Tagbar input={input} setInput={setInput} entries={entries} setEntries={setEntries}/>
                 <FormControlLabel control={<Switch
                 onChange={ handleChange }
                 checked={input.private}
                 name="private"
                 sx={{textAlign: "center"}}
                 />} label="Private mode" sx={{margin: "auto"}}/>
+                
                 <Button variant="contained" onClick={ handleClick } sx={{mr: 4}}>Submit</Button>
             </CardContent>
         </Card>
     )
 }
-
-export default AddEntries
