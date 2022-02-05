@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {IState as Props} from "./App"
+import {entry, IState as Props} from "./App"
 import {Box, Card, CardActions, CardContent, Button, Typography, TextField, Switch, FormControlLabel} from '@mui/material'
 import "./componentsCSS/AddEntries.css"
 
@@ -14,7 +14,9 @@ import { tag } from "./Tagbar"
 
 interface IProps {
     entries: Props["entries"],
-    setEntries: React.Dispatch<React.SetStateAction<Props["entries"]>>
+    setEntries: React.Dispatch<React.SetStateAction<Props["entries"]>>,
+    tagInputNotEmpty: boolean
+    setTagInputNotEmpty: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export type inputType = {
@@ -25,7 +27,7 @@ export type inputType = {
 }
 
 
-export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
+export const AddEntries: React.FC<IProps> = ({entries, setEntries, tagInputNotEmpty ,setTagInputNotEmpty}) => {
     console.log("does this re-render????")
     const {currentUser} = useAuth()
 
@@ -50,7 +52,7 @@ export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
         // Add input field as most recent entry
         let currentDate = new Date()
         const randomId = uuid().slice(0,8)
-        setEntries([{
+        const newEntry: entry = {
             entryId: randomId,
             title: input.title,
             description: input.description,
@@ -58,8 +60,8 @@ export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             tags: input.tags,
             dateCreated: currentDate,
             dateModified: currentDate
-        },...entries
-        ])
+        }
+        setEntries([newEntry, ...entries])
         // Resets input after entry has been added
         setInput({
             title: "",
@@ -68,19 +70,20 @@ export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
             private: input.private,
             tags: ([] as tag[])
         })
-
+        setTagInputNotEmpty(false)
         try {
             if (currentUser){
                 console.log(input.tags, "HELLO!")
-                const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", randomId), {
+                const entrySumbit: entry = {
                     entryId: randomId,
-                    entryTitle: input.title,
-                    entryDescription: input.description,
-                    isPrivate: input.private, 
+                    title: input.title,
+                    description: input.description,
+                    private: input.private, 
                     tags: input.tags,
                     dateCreated: currentDate,
                     dateModified: currentDate
-                });
+                }
+                const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", randomId), entrySumbit);
 
                 console.log("Document written with ID: ", randomId);
             }
@@ -88,7 +91,6 @@ export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
         } catch (e) {
             console.error("Error adding document: ", e);
         }
-
 
     }
 
@@ -119,7 +121,8 @@ export const AddEntries: React.FC<IProps> = ({entries, setEntries}) => {
                     
                     />
                 </Box>
-                <Tagbar input={input} setInput={setInput} entries={entries} setEntries={setEntries}/>
+                <Tagbar input={input} setInput={setInput} entries={entries} 
+                setEntries={setEntries}/>
                 <FormControlLabel control={<Switch
                 onChange={ handleChange }
                 checked={input.private}

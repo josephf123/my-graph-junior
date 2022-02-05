@@ -1,20 +1,19 @@
 import { Box, Chip, Divider, ListItem, TextField } from '@mui/material';
-import { collection, getDocs } from 'firebase/firestore';
-import React from 'react';
+import { arrayUnion, collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {v4 as uuid} from "uuid"
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { inputType } from './AddEntries';
 import { entry } from './App';
 import { ModalDetails } from './EntryModal';
-
+import "./componentsCSS/Tagbar.css"
 type Props = {
     entry?: entry,
     entries: entry[],
     setEntries: React.Dispatch<React.SetStateAction<entry[]>>,
     input?: inputType
-    setInput?: React.Dispatch<React.SetStateAction<inputType>>,
-    setModalDetails? : React.Dispatch<React.SetStateAction<ModalDetails>>,
+    setInput?: React.Dispatch<React.SetStateAction<inputType>>
 };
 
 export type tag = {
@@ -24,12 +23,14 @@ export type tag = {
     // More to come
 }
 
-export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setInput, setModalDetails}) => {
-    console.log("durely tagbar re-renders")
-    console.log(input)
-    const [tagInput, setTagInput] = React.useState("")
-    const [tagListState, setTagListState] = React.useState({} as tag[])
-    const [tagFieldFocused, setTagFieldFocused] = React.useState(false)
+export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setInput}) => {
+    console.log("surely tagbar re-renders")
+    const [tagInput, setTagInput] = useState("")
+    const [tagListState, setTagListState] = useState([] as tag[])
+    const [tagFieldFocused, setTagFieldFocused] = useState(false)
+    
+    
+    // For the tagbar to make sure it doesn't suggest things that were already there
     let tagsAlreadyInEntry: tag[] = [];
     if (entry) {
         tagsAlreadyInEntry = entry.tags
@@ -39,36 +40,44 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
         }
     }
 
-        // let tagList = []
-        // const querySnapshot = await getDocs(collection(db, "users", currentUser.uid, "tags"))
-        // querySnapshot.forEach((doc) => {
-        //     let data = doc.data()
-        //     tagList.push(data.name)
-        // })
-
     const { currentUser } = useAuth()
 
+    const renderTagListFirebase = async () => {
+        let tagList: tag[] = []
+        if (currentUser) {
+            const docRef = doc(db, "users", currentUser.uid)
+            const docSnap = await getDoc(docRef)
+            if (docSnap.exists()) {
+                let data = docSnap.data()
+                tagList = (data.tagList as tag[])
+            }
+            setTagListState(tagList)
+        }
+    }
+
+    useEffect(() => {
+        renderTagListFirebase()
+    }, [])
+
     
-    const renderMatches = (tagInput: string, tagsAlreadyInEntry: tag[]) => {
+    const renderMatches = (tagInput: string, tagListState: tag[]) => {
         let exactMatch = false
+        console.log(tagListState, tagFieldFocused)
         if (!tagFieldFocused) return <></>
-        console.log(tagsAlreadyInEntry)
         return (
-            <div>
+            <div style={{maxHeight: "200px", overflow: "scroll"}}>
                 {
-                    // tagsAlreadyInEntry should be the list of all tags
-                    tagsAlreadyInEntry.map((tagName) => {
+                    // tagListState should be the list of all tags that have ever been added
+                    tagListState.map((tagName) => {
                         if (tagName.name.toLowerCase() === tagInput.toLowerCase()){
-                            console.log("OKOKOKOKOKO")
                             exactMatch = true
-                        } else {
-                            if (tagName.name.toLowerCase().includes(tagInput.toLowerCase()) &&
-                            // this line checks if the suggested tag has already been added
-                            !(tagsAlreadyInEntry.some(e => e.name.toLowerCase() != tagInput.toLowerCase()))) {
-                            return <ListItem onClick={(e) => handleClick(e)} key={tagName.name} 
-                                style={{display: "flex", borderLeft: "1px solid lightgrey", borderRight: "1px solid lightgrey", cursor: "pointer"}} >{tagName.name}</ListItem>
-                            }
-                        }    
+                        }
+                        if (tagName.name.toLowerCase().includes(tagInput.toLowerCase()) &&
+                        // this line checks if the suggested tag has already been added
+                        !(tagsAlreadyInEntry.some(e => e.name.toLowerCase() == tagName.name.toLowerCase()))) {
+                        return <ListItem onMouseDown={(e) => handleClick(e, tagName)} key={tagName.name} 
+                           className="addExistingTag" >{tagName.name}</ListItem>
+                        }
 
                     })
                 }
@@ -77,8 +86,7 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
                     // will not show this if the tag is already added
                     exactMatch || tagInput.length <= 2 
                     ? <></>
-                    :<ListItem onClick={(e) => handleClick(e)} style={{display: "flex", borderBottom: "1px solid lightgrey",
-                    borderLeft: "1px solid lightgrey", borderRight: "1px solid lightgrey", cursor: "pointer"}}> Add the tag: {tagInput}</ListItem>
+                    :<ListItem onMouseDown={(e) => handleClick(e)} className="addNewTag"> Add the tag: {tagInput}</ListItem>
                 }
                 
             </div>
@@ -90,64 +98,58 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
         // This means that the tagbar is being used by an entry
         // i.e they may already have tags
         if (entry) {
-            console.log(entry)
             return (
                 entry.tags.map((tag: tag) => {
                     return <Chip key={tag.name} sx={{m: 1, cursor: "pointer"}} label={tag.name} />
                 })
             )
-        } else {
+        }
+        // This is if a tag is being created
+        else {
             if (input) {
                 return (
                     input.tags.map((tag: tag) => {
-                        console.log("hello there", tag)
                         return <Chip key={tag.name} sx={{m: 1}} label={tag.name}/>
                     })
                 )
             }
         }
-
-        // return (
-        //     <Box sx={{m: 1, textAlign: "left"}}>
-        //         <Chip sx={{m: 1}} label="all the tags I have"/>
-        //         <Chip sx={{m:1}} label="another one" />
-        //         <Chip sx={{m:1}} label="another one" />
-        //         <Chip sx={{m:1}} label="another one" />
-        //         <Chip sx={{m:1}} label="another one" />
-        //     </Box>
-
-        // )
     }
 
-    const handleClick = async (e: React.MouseEvent<HTMLElement>) => {
-        e.stopPropagation()
-        e.preventDefault()
-        console.log("ami being clicked?")
+    const handleClick = async (e: React.MouseEvent<HTMLElement>, newTagAdded?: tag ) => {
+        
         if (!currentUser) return;
-        if (tagInput.length <= 2) return;
-        console.log(tagInput)
+        setTagInput("")
+
         const randomId = uuid().slice(0,8)
-        const newTag: tag = {
-            name: tagInput,
-            dateCreated: new Date(),
-            tagId: randomId
+
+        let newTag: tag;
+        if (typeof newTagAdded === "undefined") {
+            newTag = {
+                name: tagInput,
+                dateCreated: new Date(),
+                tagId: randomId
+            }        
+        } else {
+            newTag = newTagAdded
         }
+
         // This means that the tagbar is in an entry that already exists
         if (entry) {
-            console.log(entry)
             // this is for the updating of the database
             setEntries( prevState => {
-                console.log(prevState)
                 const idx = prevState.findIndex((e) => e.entryId == entry.entryId)
                 if (idx !== -1) {
                     let newEntry = entry
-                    newEntry.tags.push(newTag)
-                    prevState[idx] = newEntry
+                    if (!newEntry.tags.includes(newTag)) {
+                        newEntry.tags.push(newTag)
+                        prevState[idx] = newEntry
+                    }
                 } 
-                console.log(prevState)
                 return prevState
             })
-            // Do firebase stuff here
+            // Add to backend list of all tags
+            
         } 
         // This means that the tagbar is in an add entry page (creating a new entry)
         // therefore we just need to update the input
@@ -156,15 +158,34 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             // either an entry or setInput. How can we do this?
             if (setInput) {
                 setInput(prevState => {
-                    prevState.tags.push(newTag)
+                    if (!prevState.tags.includes(newTag)) {
+                        prevState.tags.push(newTag)
+                    }
                     return prevState
                 })
 
             }
 
         }
-        setTagInput("")
 
+        // If it is a new tag, add to the tagList in backend
+        if (typeof newTagAdded === "undefined") {
+            let tagList: tag[] = tagListState
+            // Can't create tag with same name
+            if (!tagList.some((e) => e.name.toLowerCase() === newTag.name.toLowerCase())) {
+                if (currentUser) {
+                    const docRef = doc(db, "users", currentUser.uid)
+                    // const docSnap = await getDoc(docRef)
+                    await updateDoc(docRef, {
+                        tagList: arrayUnion(newTag)
+                    })
+                    
+                    tagList.push(newTag)
+        
+                    setTagListState(tagList)
+                }
+            }
+        }
     }
 
     
@@ -173,7 +194,14 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
         <Box sx={{display: "flex", mr: 2, pr: 2, flexDirection: "column"}}>
             <TextField 
             onChange={(e) => setTagInput(e.target.value)}
-            onFocus={() => {setTagFieldFocused(true)}}
+            onFocus={() => {
+                setTagFieldFocused(true); 
+                setTagInput("")}
+            }
+            onBlur={(e) => {
+                setTagInput("")
+                setTagFieldFocused(false)
+            }}
             value={tagInput}
             label="Search or create tags" 
             variant="standard" 
@@ -182,11 +210,12 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             autoComplete='off'
             />
             <div id="tagMatches" style={{display: "flex", flexDirection: "column"}}>
-                {renderMatches(tagInput, tagsAlreadyInEntry)}
+                {renderMatches(tagInput, tagListState)}
                 <div style={{display: "flex", flexDirection: "row"}}>
                     {renderTags()}
                 </div>
             </div>
+            
         </Box>
     </div>) 
 

@@ -16,7 +16,7 @@ interface IProps {
     modalDetails : ModalDetails,
     setModalDetails: React.Dispatch<React.SetStateAction<ModalDetails>>,
     entries:entry[],
-    setEntries: React.Dispatch<React.SetStateAction<entry[]>>
+    setEntries: React.Dispatch<React.SetStateAction<entry[]>>,
 }
 
 
@@ -56,28 +56,24 @@ export const EntryModal: React.FC<IProps> = ({modalDetails, setModalDetails, ent
     }
 
     const handleSubmit = async () => {
+        let currentDate = new Date()
+        const entrySumbit: entry = {
+            entryId: modalDetails.entry.entryId,
+            title: input.title,
+            description: input.description,
+            private: input.private,
+            tags: modalDetails.entry.tags,
+            dateCreated: modalDetails.entry.dateCreated,
+            dateModified: currentDate
+        }
         setEntries( prevState => {
             const idx = prevState.findIndex((e) => e.entryId == modalDetails.entry.entryId)
-            const newEntry = {
-                entryId: modalDetails.entry.entryId,
-                title: input.title,
-                description: input.description,
-                tags: modalDetails.entry.tags,
-                private: input.private,
-                dateCreated: modalDetails.entry.dateCreated,
-                dateModified: new Date()
-            }
-            prevState[idx] = newEntry
+            prevState[idx] = entrySumbit
             return prevState
         })
         try {
             if (currentUser){
-                const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", modalDetails.entry.entryId), {
-                    entryId: modalDetails.entry.entryId,
-                    entryTitle: input.title,
-                    entryDescription: input.description,
-                    isPrivate: input.private
-                });
+                const docRef = await setDoc(doc(db, "users", currentUser.uid, "entries", modalDetails.entry.entryId), entrySumbit);
 
                 console.log("Document written with ID: ", modalDetails.entry.entryId);
             }
@@ -122,7 +118,7 @@ export const EntryModal: React.FC<IProps> = ({modalDetails, setModalDetails, ent
                         className="textfieldDescription"
                         />
                     </Box>
-                    <Tagbar entry={modalDetails.entry} entries={entries} setEntries={setEntries} setModalDetails={setModalDetails}/>
+                    <Tagbar entry={modalDetails.entry} entries={entries} setEntries={setEntries}/>
                     <FormControlLabel control={<Switch
                     onChange={ handleChange }
                     checked={input.private}

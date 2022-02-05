@@ -35,7 +35,7 @@ const App = () => {
   const [privateMode, setPrivateMode] = useState<IState["privateMode"]>(false)
   const [error, setError] = useState<string>("")
   const [modalDetails, setModalDetails] = useState({open: false, entry: {} as entry})
-
+  const [tagInputNotEmpty, setTagInputNotEmpty] = useState(true)
 
   const handleLogout = () => {
       setError("")
@@ -55,22 +55,22 @@ const App = () => {
 
       let entryList: IState["entries"] = []
       if (currentUser) {
-        const querySnapshot = await getDocs(query(collection(db, "users", currentUser.uid, "entries"), orderBy("dateModified")))
+        const querySnapshot = await getDocs(query(collection(db, "users", currentUser.uid, "entries"), orderBy("dateCreated", "desc")))
         querySnapshot.forEach((doc) => {
             let data = doc.data()
             let entry: entry = {
                 entryId: (data.entryId as string),
-                title: (data.entryTitle as string),
-                description: (data.entryDescription as string),
+                title: (data.title as string),
+                description: (data.description as string),
                 tags: (data.tags as tag[]), 
-                private: (data.isPrivate as boolean),
+                private: (data.private as boolean),
                 dateCreated: (data.dateCreated as Date),
                 dateModified: (data.dateModified as Date)
             }
             console.log(entry)
             entryList.push(entry)
         });
-        setEntries(entryList.reverse())
+        setEntries(entryList)
       }
 
 
@@ -88,7 +88,7 @@ const App = () => {
       <Button onClick={handleLogout}>Log out</Button>
       <PrivateButton privateMode={privateMode} setPrivateMode={setPrivateMode}/>
       <div className="entryHolder">
-          <AddEntries entries={entries} setEntries={setEntries}/>
+          <AddEntries entries={entries} setEntries={setEntries} tagInputNotEmpty={tagInputNotEmpty} setTagInputNotEmpty={setTagInputNotEmpty}/>
       </div>
       <div className="entryModal">
         <EntryModal modalDetails={modalDetails} setModalDetails={setModalDetails} entries={entries} setEntries={setEntries}/>
