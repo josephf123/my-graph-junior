@@ -2,9 +2,10 @@
   text-align: center;
 }
 
-.entryHolder {
+.entityHolder {
   display: flex;
-  width: 500px;
   margin: auto;
+  justify-content: center;
+  /* width: 500px; */
 }
 

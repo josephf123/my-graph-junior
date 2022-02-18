@@ -1,19 +1,19 @@
 import { Box, Chip, Divider, ListItem, TextField } from '@mui/material';
-import { arrayUnion, collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { arrayUnion, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import React, { useEffect, useLayoutEffect, useReducer, useState } from 'react';
 import {v4 as uuid} from "uuid"
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
-import { inputType } from './AddEntries';
-import { entry } from './App';
-import { ModalDetails } from './EntryModal';
+import { inputInterface } from './AddEntities';
+import { entity } from './App';
+import { ModalDetails } from './EntityModal';
 import "./componentsCSS/Tagbar.css"
 type Props = {
-    entry?: entry,
-    entries: entry[],
-    setEntries: React.Dispatch<React.SetStateAction<entry[]>>,
-    input?: inputType
-    setInput?: React.Dispatch<React.SetStateAction<inputType>>
+    entity?: entity,
+    entities: entity[],
+    setEntities: React.Dispatch<React.SetStateAction<entity[]>>,
+    input?: inputInterface
+    setInput?: React.Dispatch<React.SetStateAction<inputInterface>>
 };
 
 export type tag = {
@@ -23,20 +23,23 @@ export type tag = {
     // More to come
 }
 
-export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setInput}) => {
+export const Tagbar: React.FC<Props> = ({entity, entities, setEntities, input, setInput}) => {
     console.log("surely tagbar re-renders")
     const [tagInput, setTagInput] = useState("")
     const [tagListState, setTagListState] = useState([] as tag[])
     const [tagFieldFocused, setTagFieldFocused] = useState(false)
     
+    // A function that allows me to rerender Tagbar
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+
     
     // For the tagbar to make sure it doesn't suggest things that were already there
-    let tagsAlreadyInEntry: tag[] = [];
-    if (entry) {
-        tagsAlreadyInEntry = entry.tags
+    let tagsAlreadyInEntity: tag[] = [];
+    if (entity) {
+        tagsAlreadyInEntity = entity.tags
     } else {
         if (input) {
-            tagsAlreadyInEntry = input.tags
+            tagsAlreadyInEntity = input.tags
         }
     }
 
@@ -65,16 +68,17 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
         console.log(tagListState, tagFieldFocused)
         if (!tagFieldFocused) return <></>
         return (
-            <div style={{maxHeight: "200px", overflow: "scroll"}}>
+            <div style={{maxHeight: "200px", overflow: "overlay"}}>
                 {
                     // tagListState should be the list of all tags that have ever been added
+                    tagListState &&
                     tagListState.map((tagName) => {
                         if (tagName.name.toLowerCase() === tagInput.toLowerCase()){
                             exactMatch = true
                         }
                         if (tagName.name.toLowerCase().includes(tagInput.toLowerCase()) &&
                         // this line checks if the suggested tag has already been added
-                        !(tagsAlreadyInEntry.some(e => e.name.toLowerCase() == tagName.name.toLowerCase()))) {
+                        !(tagsAlreadyInEntity.some(e => e.name.toLowerCase() == tagName.name.toLowerCase()))) {
                         return <ListItem onMouseDown={(e) => handleClick(e, tagName)} key={tagName.name} 
                            className="addExistingTag" >{tagName.name}</ListItem>
                         }
@@ -94,22 +98,27 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
     }
 
     const renderTags = () => {
-
-        // This means that the tagbar is being used by an entry
+        // This means that the tagbar is being used by an entity
         // i.e they may already have tags
-        if (entry) {
+        if (entity) {
             return (
-                entry.tags.map((tag: tag) => {
-                    return <Chip key={tag.name} sx={{m: 1, cursor: "pointer"}} label={tag.name} />
+                entity.tags.map((tag: tag) => {
+                    return <Chip key={tag.name} sx={{m: 1, cursor: "pointer"}} label={tag.name} 
+                    onClick={() => console.log("hi")} onDelete={() => {handleDeleteTag(tag,entity)}}
+                    />
                 })
             )
         }
         // This is if a tag is being created
         else {
             if (input) {
+                console.log("these are the tags", input.tags)
                 return (
                     input.tags.map((tag: tag) => {
-                        return <Chip key={tag.name} sx={{m: 1}} label={tag.name}/>
+                        console.log(tag)
+                        return <Chip key={tag.name} sx={{m: 1}} label={tag.name}
+                        onClick={() => console.log("hi")} onDelete={() => {handleDeleteTag(tag)}}
+                        />
                     })
                 )
             }
@@ -134,28 +143,27 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             newTag = newTagAdded
         }
 
-        // This means that the tagbar is in an entry that already exists
-        if (entry) {
+        // This means that the tagbar is in an entity that already exists
+        if (entity) {
             // this is for the updating of the database
-            setEntries( prevState => {
-                const idx = prevState.findIndex((e) => e.entryId == entry.entryId)
+            setEntities( prevState => {
+                const idx = prevState.findIndex((e) => e.id == entity.id)
                 if (idx !== -1) {
-                    let newEntry = entry
-                    if (!newEntry.tags.includes(newTag)) {
-                        newEntry.tags.push(newTag)
-                        prevState[idx] = newEntry
+                    let newEntity = entity
+                    if (!newEntity.tags.includes(newTag)) {
+                        newEntity.tags.push(newTag)
+                        prevState[idx] = newEntity
                     }
                 } 
                 return prevState
             })
-            // Add to backend list of all tags
             
         } 
-        // This means that the tagbar is in an add entry page (creating a new entry)
+        // This means that the tagbar is in an add entity page (creating a new entity)
         // therefore we just need to update the input
         else {
             // Find a smarter way to do this. We know we will pass into props
-            // either an entry or setInput. How can we do this?
+            // either an entity or setInput. How can we do this?
             if (setInput) {
                 setInput(prevState => {
                     if (!prevState.tags.includes(newTag)) {
@@ -175,11 +183,19 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             if (!tagList.some((e) => e.name.toLowerCase() === newTag.name.toLowerCase())) {
                 if (currentUser) {
                     const docRef = doc(db, "users", currentUser.uid)
-                    // const docSnap = await getDoc(docRef)
-                    await updateDoc(docRef, {
-                        tagList: arrayUnion(newTag)
-                    })
-                    
+                    const docSnap = await getDoc(docRef)
+                    if (docSnap) {
+                        if (docSnap.data() && docSnap.data()?.tagList) {
+                            await updateDoc(docRef, {
+                                tagList: arrayUnion(newTag)
+                            })
+                        } else {
+                            await setDoc(docRef, {
+                                tagList: [newTag]
+                            })
+                        }  
+                    }
+                        
                     tagList.push(newTag)
         
                     setTagListState(tagList)
@@ -187,7 +203,39 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             }
         }
     }
+    // $%^
+    const handleDeleteTag = async (tagDelete: tag, fromEntity?: entity) => {
+        // This means it is from AddEntities and the entity has not
+        // been created yet
+        
+        if (typeof fromEntity === "undefined") {
+            if (setInput) {
+                setInput(prevState => {
+                    console.log(tagDelete)
+                    if (prevState.tags.includes(tagDelete)) {
+                        prevState.tags = prevState.tags.filter((tag) => tag !== tagDelete)
+                    }
+                    return prevState
+                })
+            }
+        } 
+        // This means it has been created and we must update firestore
+        else {
+            setEntities( prevState => {
+                const idx = prevState.findIndex((e) => e.id == fromEntity.id)
+                if (idx !== -1) {
+                    let newEntity = fromEntity
+                    if (newEntity.tags.includes(tagDelete)) {
+                        newEntity.tags = newEntity.tags.filter((tag) => tag !== tagDelete)
+                        prevState[idx] = newEntity
+                    }
+                } 
+                return prevState
+            })
 
+        }
+        forceUpdate()
+    }
     
     return (
     <div>
@@ -211,7 +259,7 @@ export const Tagbar: React.FC<Props> = ({entry, entries, setEntries, input, setI
             />
             <div id="tagMatches" style={{display: "flex", flexDirection: "column"}}>
                 {renderMatches(tagInput, tagListState)}
-                <div style={{display: "flex", flexDirection: "row"}}>
+                <div style={{flexDirection: "row", textAlign: "left"}}>
                     {renderTags()}
                 </div>
             </div>

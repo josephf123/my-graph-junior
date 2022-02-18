@@ -1,0 +1,11 @@
+.my-masonry-grid {
+    display: flex;
+    /* margin-left: -75px; gutter size offset */
+    width: 95%;
+    position: relative;
+}
+.my-masonry-grid_column {
+    /* margin: 10px; */
+/* padding-left: 30px; gutter size */
+background-clip: padding-box;
+}
