@@ -25,7 +25,9 @@ interface IProps {
     tagInputNotEmpty: boolean
     setTagInputNotEmpty: React.Dispatch<React.SetStateAction<boolean>>,
     entityDataType: EntityData,
-    setEntityDataType: React.Dispatch<React.SetStateAction<EntityData>>
+    setEntityDataType: React.Dispatch<React.SetStateAction<EntityData>>,
+    tagListState: tag[],
+    setTagListState: React.Dispatch<React.SetStateAction<tag[]>>
 }
 export interface inputInterface {
     type: EntityData,
@@ -96,7 +98,7 @@ const displayAddEntity = (
     setEntityDataType: React.Dispatch<React.SetStateAction<EntityData>>,
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     input: inputInterface,
-    setInput: Dispatch<SetStateAction<inputInterface>>,
+    setInput: Dispatch<SetStateAction<inputInterface>>
     ) => {
     if (entityDataType == "entry") {
         return <AddTypeEntry  input={input} setInput={setInput} handleChange={handleChange} entityDataType={entityDataType} setEntityDataType={setEntityDataType}/>
@@ -112,7 +114,8 @@ const displayAddEntity = (
 
 
 
-export const AddEntities: React.FC<IProps> = ({entities, setEntities, tagInputNotEmpty ,setTagInputNotEmpty, entityDataType, setEntityDataType}) => {
+export const AddEntities: React.FC<IProps> = ({entities, setEntities, tagInputNotEmpty ,setTagInputNotEmpty, entityDataType, setEntityDataType,
+     tagListState, setTagListState}) => {
     console.log("does this re-render????")
     const {currentUser} = useAuth()
 
@@ -191,7 +194,7 @@ export const AddEntities: React.FC<IProps> = ({entities, setEntities, tagInputNo
             <CardContent className="inputHolder">
                 { displayAddEntity(entityDataType, setEntityDataType, handleChange, input, setInput)}
                 <Tagbar input={input} setInput={setInput} entities={entities} 
-                setEntities={setEntities}/>
+                setEntities={setEntities} tagListState={tagListState} setTagListState={setTagListState}/>
                 <FormControlLabel control={<Switch
                 onChange={ handleChange }
                 checked={input.private}

@@ -18,6 +18,8 @@ interface IProps {
     setModalDetails: React.Dispatch<React.SetStateAction<ModalDetails>>,
     entities : entity[],
     setEntities: React.Dispatch<React.SetStateAction<entity[]>>,
+    tagListState: tag[],
+    setTagListState: React.Dispatch<React.SetStateAction<tag[]>>
 }
 
 interface modalInputInterface {
@@ -29,7 +31,7 @@ interface modalInputInterface {
     sources?: source[]
 }
 
-export const EntityModal: React.FC<IProps> = ({modalDetails, setModalDetails, entities, setEntities}) => {
+export const EntityModal: React.FC<IProps> = ({modalDetails, setModalDetails, entities, setEntities, tagListState, setTagListState}) => {
     console.log(modalDetails.entity.type)
     const { currentUser } = useAuth()
     console.log(modalDetails)
@@ -165,7 +167,7 @@ export const EntityModal: React.FC<IProps> = ({modalDetails, setModalDetails, en
                         :
                         <></>
                     }
-                    <Tagbar entity={modalDetails.entity} entities={entities} setEntities={setEntities}/>
+                    <Tagbar entity={modalDetails.entity} entities={entities} setEntities={setEntities} tagListState={tagListState} setTagListState={setTagListState}/>
                     <FormControlLabel control={<Switch
                     onChange={ handleChange }
                     checked={input.private}

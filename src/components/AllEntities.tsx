@@ -54,9 +54,11 @@ const filterEntities = (prefilteredEntities: entity[], query: string) => {
         return prefilteredEntities.filter((entity) => {
             if (entity.type === "journal") {
                 let shouldIncludeJournal = false
-                shouldIncludeJournal = entity.source.some((source: source) => {
-                    source.name.toLowerCase().includes(query.toLowerCase())
-                })
+                if (entity.source) {
+                    shouldIncludeJournal = entity.source.some((source: source) => {
+                        source.name.toLowerCase().includes(query.toLowerCase())
+                    })
+                }
                 if (shouldIncludeJournal) {
                     return true
                 }
@@ -208,6 +210,7 @@ const AllEntities: React.FC<IProps> = ({entities, setEntities, privateMode, moda
                         setModalDetails(modalDetails)
                     }}>
                         { displayEntity(entity, filteredEntities, setEntities, isHovering, setIsHovering, setModalDetails ) }
+                    <Card>Testing</Card>
                     </Card>
                 </div>
             )

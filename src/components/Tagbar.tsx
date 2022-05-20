@@ -13,7 +13,9 @@ type Props = {
     entities: entity[],
     setEntities: React.Dispatch<React.SetStateAction<entity[]>>,
     input?: inputInterface
-    setInput?: React.Dispatch<React.SetStateAction<inputInterface>>
+    setInput?: React.Dispatch<React.SetStateAction<inputInterface>>,
+    tagListState: tag[],
+    setTagListState: React.Dispatch<React.SetStateAction<tag[]>>
 };
 
 export type tag = {
@@ -23,10 +25,10 @@ export type tag = {
     // More to come
 }
 
-export const Tagbar: React.FC<Props> = ({entity, entities, setEntities, input, setInput}) => {
+export const Tagbar: React.FC<Props> = ({entity, entities, setEntities, input, setInput, tagListState, setTagListState}) => {
     console.log("surely tagbar re-renders")
     const [tagInput, setTagInput] = useState("")
-    const [tagListState, setTagListState] = useState([] as tag[])
+    // const [tagListState, setTagListState] = useState([] as tag[])
     const [tagFieldFocused, setTagFieldFocused] = useState(false)
     
     // A function that allows me to rerender Tagbar

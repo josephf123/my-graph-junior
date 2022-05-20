@@ -1,7 +1,7 @@
 import "../firebase"
 import React, {useState, useEffect} from 'react';
 import './componentsCSS/App.css';
-import { collection, addDoc, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, addDoc, getDocs, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import { firebaseApp, db } from "../firebase"
 
 import AllEntities from './AllEntities';
@@ -16,6 +16,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { EntityModal, ModalDetails } from "./EntityModal";
 import { tag } from "./Tagbar";
 import { SearchBar } from "./SearchBar";
+import { TagListBox } from "./TagListBox";
 
 interface allEntities {
     // This is an index signature. 
@@ -68,6 +69,7 @@ const App = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [entityDataType, setEntityDataType] = React.useState<EntityData>("entry")
+  const [tagListState, setTagListState] = useState([] as tag[])
 
   const handleLogout = () => {
       setError("")
@@ -122,8 +124,23 @@ const App = () => {
 
   }
 
-  useEffect(() => {
-      getFirestoreData();
+  const renderTagListFirebase = async () => {
+    let tagList: tag[] = []
+    if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid)
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+            let data = docSnap.data()
+            tagList = (data.tagList as tag[])
+        }
+        setTagListState(tagList)
+    }
+  }
+
+
+useEffect(() => {
+    getFirestoreData();
+    renderTagListFirebase()
   }, [])
 
 
@@ -170,12 +187,15 @@ const App = () => {
           <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
       <div className="entityHolder">
+          <TagListBox tagListState={tagListState} setTagListState={setTagListState}/>
           <AddEntities entities={entities} setEntities={setEntities} tagInputNotEmpty={tagInputNotEmpty} setTagInputNotEmpty={setTagInputNotEmpty}
           entityDataType={entityDataType} setEntityDataType={setEntityDataType}
-          />
+          tagListState={tagListState} setTagListState={setTagListState}/>
+          <Card sx={{m:3, p:3}}> Testing testing 123</Card>
       </div>
       <div className="entityModal">
-        <EntityModal modalDetails={modalDetails} setModalDetails={setModalDetails} entities={entities} setEntities={setEntities}/>
+        <EntityModal modalDetails={modalDetails} setModalDetails={setModalDetails} entities={entities} setEntities={setEntities} 
+        tagListState={tagListState} setTagListState={setTagListState}/>
       </div>
       <div>
           <AllEntities entities={entities} setEntities={setEntities} privateMode={privateMode} modalDetails={modalDetails} 

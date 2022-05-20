@@ -1,0 +1,22 @@
+.tagListBoxOuter {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+}
+
+.tagListBoxInner {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 16px;
+    margin: 24px;
+    margin-top: 0;
+}
+
+.individualTags {
+    display: flex;
+    padding: 4px;
+    margin: 4px;
+    height: fit-content;
+    border-radius: 4px;
+    /* font-size: xx-large */
+}
