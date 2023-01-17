@@ -8,13 +8,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { tag } from "./Tagbar";
 import "./componentsCSS/tagListBox.css"
 import { Box, Card } from "@mui/material";
+import { TagButton } from "./TagButton";
 
 interface Props {
     tagListState: tag[],
     setTagListState: React.Dispatch<React.SetStateAction<tag[]>>
 }
 
-let colourPalette = ["#f94144","#f3722c","#f8961e","#f9844a","#f9c74f","#90be6d","#43aa8b","#4d908e","#577590","#277da1"]
 
 
 export const TagListBox: React.FC<Props> = ({tagListState, setTagListState}) => {
@@ -25,8 +25,7 @@ export const TagListBox: React.FC<Props> = ({tagListState, setTagListState}) => 
             <Card className="tagListBoxInner">
             {
                 tagListState.map((indTag: tag, idx) => {
-                    return <div key={indTag.name} style={{backgroundColor: colourPalette[idx % 10]}} className="individualTags">{indTag.name}</div>
-                    
+                    return <TagButton key={indTag.name} indTag={indTag} idx={idx}/>                    
                 })
             }
             </Card>

@@ -1,5 +1,5 @@
 
-import { entity, entry } from "./App"
+import { entity } from "./App"
 
 import { IconButton } from "@mui/material"
 import { LockOutlined, LockOpen, Delete, Edit } from "@mui/icons-material"

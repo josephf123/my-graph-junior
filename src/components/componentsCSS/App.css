@@ -5,7 +5,7 @@
 .entityHolder {
   display: flex;
   margin: auto;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   width: 100%;
 }
 

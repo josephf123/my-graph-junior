@@ -12,11 +12,3 @@
     margin-top: 0;
 }
 
-.individualTags {
-    display: flex;
-    padding: 4px;
-    margin: 4px;
-    height: fit-content;
-    border-radius: 4px;
-    /* font-size: xx-large */
-}

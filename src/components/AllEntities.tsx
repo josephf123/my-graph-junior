@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {IState as Props, entry, entity, source} from "./App"
+import {IState as Props, entity, source} from "./App"
 import {Box, Card, CardActions, CardContent, Button, Typography, IconButton} from '@mui/material'
 
 import { Delete, DocumentScanner, LockOpen, LockOutlined } from '@mui/icons-material';
@@ -16,6 +16,7 @@ import { debounce } from 'lodash';
 import { tag } from "./Tagbar";
 import Masonry from 'react-masonry-css'
 import "./componentsCSS/AllEntities.css"
+import { TagButton } from "./TagButton";
 
 interface IProps {
     entities: entity[],
@@ -40,7 +41,8 @@ const filterEntities = (prefilteredEntities: entity[], query: string) => {
         // Fn to check if the key of entity is "tags"
         const isTagArr = (tbd: any): tbd is tag[] => {
             if (Array.isArray(tbd)) {
-                if (tbd !== []) {
+
+                if (tbd.length != 0) {
                     console.log(tbd)
                     return (tbd as tag[])[0]?.tagId !== undefined
                 }
@@ -49,20 +51,20 @@ const filterEntities = (prefilteredEntities: entity[], query: string) => {
             return false
         }
         
-        // This will go through every value inside entity and see if it contains
+        // This will go through every value inside entity (from key value pair) and see if it contains
         // the query, if so it will include it
         return prefilteredEntities.filter((entity) => {
-            if (entity.type === "journal") {
-                let shouldIncludeJournal = false
-                if (entity.source) {
-                    shouldIncludeJournal = entity.source.some((source: source) => {
-                        source.name.toLowerCase().includes(query.toLowerCase())
-                    })
-                }
-                if (shouldIncludeJournal) {
-                    return true
-                }
-            } 
+            // if (entity.type === "journal") {
+            //     let shouldIncludeJournal = false
+            //     if (entity.source) {
+            //         shouldIncludeJournal = entity.source.some((source: source) => {
+            //             source.name.toLowerCase().includes(query.toLowerCase())
+            //         })
+            //     }
+            //     if (shouldIncludeJournal) {
+            //         return true
+            //     }
+            // } 
             return Object.keys(entity).some((k) => {
                 let shouldInclude = false
                 if (typeof entity[k] === "string") {
@@ -105,7 +107,7 @@ const displayEntity = (
     isHovering: boolean,
     setIsHovering: React.Dispatch<React.SetStateAction<boolean>>,
     setModalDetails: React.Dispatch<React.SetStateAction<ModalDetails>>) => {
-    if (entity.type === "entry") {
+    // if (entity.type === "entry") {
         return (
             <CardContent sx={{display: "block", maxHeight: {xs: "100px", sm: "200px"}}}>
                 <Typography style={{fontWeight: "600",  textAlign: "left"}} color="text.primary" component="div" gutterBottom>
@@ -130,50 +132,50 @@ const displayEntity = (
             
             </CardContent>
         )
-    } else if (entity.type === "journal") {
-        return (
-            <CardContent sx={{display: "block", maxHeight: {xs: "200px", sm: "300px"}}}>
-                <Typography style={{fontWeight: "600", textAlign: "left"}} component="div" gutterBottom>
-                {entity.title.length > 25 ? entity.title.slice(0,25) : entity.title}
-                </Typography>
-                {
-                    entity.description !== ""
-                    ? 
-                    <Typography color="text.secondary" sx={{whiteSpace: "pre-line", wordBreak: "break-word", textAlign: "left"}}>
-                        {entity.description.length > 100 ? entity.description.slice(0,100) : entity.description}
-                    </Typography>
-                    :
-                    <div style={{height: "24px"}}></div>
-                }
+    // } else if (entity.type === "journal") {
+    //     return (
+    //         <CardContent sx={{display: "block", maxHeight: {xs: "200px", sm: "300px"}}}>
+    //             <Typography style={{fontWeight: "600", textAlign: "left"}} component="div" gutterBottom>
+    //             {entity.title.length > 25 ? entity.title.slice(0,25) : entity.title}
+    //             </Typography>
+    //             {
+    //                 entity.description !== ""
+    //                 ? 
+    //                 <Typography color="text.secondary" sx={{whiteSpace: "pre-line", wordBreak: "break-word", textAlign: "left"}}>
+    //                     {entity.description.length > 100 ? entity.description.slice(0,100) : entity.description}
+    //                 </Typography>
+    //                 :
+    //                 <div style={{height: "24px"}}></div>
+    //             }
 
-                <div style={{height: 28}}>
-                    { isHovering
-                    ? <HoverIconBar entityInd={entity} entities={filteredEntities} setEntities={setEntities} setIsHovering={setIsHovering} setModalDetails={setModalDetails}/>
-                    : <></>
-                    }
-                </div>
-            </CardContent>
-        )
-    } else if (entity.type === "profundity") {
-        return (
-        <CardContent sx={{display: "block"}}>
+    //             <div style={{height: 28}}>
+    //                 { isHovering
+    //                 ? <HoverIconBar entityInd={entity} entities={filteredEntities} setEntities={setEntities} setIsHovering={setIsHovering} setModalDetails={setModalDetails}/>
+    //                 : <></>
+    //                 }
+    //             </div>
+    //         </CardContent>
+    //     )
+    // } else if (entity.type === "profundity") {
+    //     return (
+    //     <CardContent sx={{display: "block"}}>
 
-            <Typography sx={{whiteSpace: "pre-line", wordBreak: "break-word", textAlign: "left", fontWeight: 500}}>
-                {entity.description.length > 100 ? entity.description.slice(0,100) : entity.description}
-            </Typography>
-            <div style={{height: "24px"}}></div>
+    //         <Typography sx={{whiteSpace: "pre-line", wordBreak: "break-word", textAlign: "left", fontWeight: 500}}>
+    //             {entity.description.length > 100 ? entity.description.slice(0,100) : entity.description}
+    //         </Typography>
+    //         <div style={{height: "24px"}}></div>
 
-            <div style={{height: 28}}>
-                { isHovering
-                ? <HoverIconBar entityInd={entity} entities={filteredEntities} setEntities={setEntities} setIsHovering={setIsHovering} setModalDetails={setModalDetails}/>
-                : <></>
-                }
-            </div>
-        </CardContent>
-        )
-    } else {
-        return <></>
-    }
+    //         <div style={{height: 28}}>
+    //             { isHovering
+    //             ? <HoverIconBar entityInd={entity} entities={filteredEntities} setEntities={setEntities} setIsHovering={setIsHovering} setModalDetails={setModalDetails}/>
+    //             : <></>
+    //             }
+    //         </div>
+    //     </CardContent>
+    //     )
+    // } else {
+    //     return <></>
+    // }
 }
 
 const AllEntities: React.FC<IProps> = ({entities, setEntities, privateMode, modalDetails, setModalDetails, searchQuery}) => {
@@ -188,17 +190,11 @@ const AllEntities: React.FC<IProps> = ({entities, setEntities, privateMode, moda
     const renderEntities = (filteredEntities: entity[]) => filteredEntities.map((entity) => {
         const AllThings = () => {
             const [isHovering, setIsHovering] = useState(false);
-            const boxShadowObj = {
-                "entry": 1,
-                "journal": 15,
-                "profundity": 20
-            }
-            let boxShadowSize = boxShadowObj[entity.type]
             return (
                 <div style={{display: "block", position: "relative", width: "100%"}}>
                     <Card 
                     key={entity.id}
-                    sx={{ m: 3, cursor: "pointer", display: "block", boxShadow: boxShadowSize}} 
+                    sx={{ m: 3, cursor: "pointer", display: "block", boxShadow: 1}} 
                     onMouseOver={debounce(() => setIsHovering(true), 1)} 
                     onMouseOut={debounce(() => setIsHovering(false), 1)} 
                     onClick={() => {
@@ -210,7 +206,22 @@ const AllEntities: React.FC<IProps> = ({entities, setEntities, privateMode, moda
                         setModalDetails(modalDetails)
                     }}>
                         { displayEntity(entity, filteredEntities, setEntities, isHovering, setIsHovering, setModalDetails ) }
-                    <Card>Testing</Card>
+                    
+                    
+                    {
+                        entity.tags.length != 0 &&
+                        <div className="tagHolderEntity">
+                            {
+                                entity.tags.map((tag, idx) => {
+                                    return (
+                                        <TagButton indTag={tag} idx={idx} />
+                                    )
+                                })
+                            }
+                        </div>
+                    }
+                    
+                    
                     </Card>
                 </div>
             )
