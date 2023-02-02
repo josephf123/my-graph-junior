@@ -211,7 +211,8 @@ useEffect(() => {
                     <Button sx={{width: "100%"}}>
                         <Link to="update-profile">Update profile</Link>
                     </Button>
-                    <ImportButton></ImportButton>
+                    <ImportButton entities={entities} setEntities={setEntities}
+                    tagListState={tagListState} setTagListState={setTagListState}></ImportButton>
                     
                     <Button variant="contained" component="label"> Export <input type="file" hidden/> </Button>
                     <Button sx={{width: "100%"}} onClick={handleExport}>Export</Button>

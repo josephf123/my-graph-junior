@@ -102,6 +102,8 @@ export const Tagbar: React.FC<Props> = ({entity, entities, setEntities, input, s
     const renderTags = () => {
         // This means that the tagbar is being used by an entity
         // i.e they may already have tags
+        console.log(entity)
+        console.log("THIS IS ENTITY!!!")
         if (entity) {
             return (
                 entity.tags.map((tag: tag) => {
